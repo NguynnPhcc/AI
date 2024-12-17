@@ -1,0 +1,85 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Tạo dữ liệu mẫu (Giả sử dữ liệu có các cột 'year', 'mileage', 'brand', 'price')
+data = pd.DataFrame({
+    'year': [2020, 2019, 2018, 2021, 2020, 2017, 2016, 2022, 2021, 2018],
+    'mileage': [15000, 25000, 30000, 10000, 12000, 50000, 60000, 8000, 7000, 45000],
+    'brand': ['Toyota', 'Honda', 'Ford', 'BMW', 'Audi', 'Chevrolet', 'Ford', 'Toyota', 'BMW', 'Audi'],
+    'model': ['Corolla', 'Civic', 'Focus', 'X5', 'A4', 'Impala', 'F-150', 'Camry', 'M3', 'Q7'],
+    'price': [20000, 18000, 16000, 35000, 33000, 15000, 25000, 22000, 40000, 34000]
+})
+
+# 2. Xem qua thông tin dữ liệu
+print("Thông tin dữ liệu:")
+print(data.head())
+print(data.info())
+
+# 3. Kiểm tra các giá trị thiếu
+print("\nGiá trị thiếu trong dữ liệu:")
+print(data.isnull().sum())
+
+# 4. Tiền xử lý dữ liệu
+# Xử lý giá trị thiếu (nếu có) - trong trường hợp này không có
+# Mã hóa các biến phân loại (ví dụ: 'brand', 'model')
+data = pd.get_dummies(data, drop_first=True)
+
+# 5. Tách dữ liệu thành đặc trưng (features) và nhãn (target)
+X = data.drop('price', axis=1)  # X là các đặc trưng
+y = data['price']  # y là nhãn (giá xe)
+
+# 6. Chia dữ liệu thành tập huấn luyện và kiểm tra
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 7. Chuẩn hóa dữ liệu (nếu cần thiết)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# 8. Xây dựng mô hình hồi quy tuyến tính (Linear Regression)
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# 9. Dự đoán giá trị trên tập kiểm tra
+y_pred = model.predict(X_test)
+
+# 10. Đánh giá mô hình
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print(f"\nĐánh giá mô hình:")
+print(f'Mean Absolute Error (MAE): {mae}')
+print(f'Mean Squared Error (MSE): {mse}')
+print(f'Root Mean Squared Error (RMSE): {rmse}')
+print(f'R-squared (R2): {r2}')
+
+# 11. Vẽ biểu đồ so sánh giá trị thực tế và dự đoán
+plt.figure(figsize=(10,6))
+plt.scatter(y_test, y_pred)
+plt.xlabel('Giá trị thực tế')
+plt.ylabel('Giá trị dự đoán')
+plt.title('So sánh giá trị thực tế và giá trị dự đoán')
+plt.show()
+
+# 12. Dự đoán cho một số ví dụ
+example_data = pd.DataFrame({
+    'year': [2020],
+    'mileage': [15000],
+    'brand': ['Toyota'],
+    'model': ['Corolla'],
+})
+
+# Mã hóa và chuẩn hóa dữ liệu ví dụ
+example_data = pd.get_dummies(example_data, drop_first=True)
+example_data = scaler.transform(example_data)
+
+predicted_price = model.predict(example_data)
+print(f'\nGiá dự đoán của chiếc xe: {predicted_price[0]}')
